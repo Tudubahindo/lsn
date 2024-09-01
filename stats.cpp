@@ -27,16 +27,21 @@ double covariance (std::vector<double> x, std::vector<double> y){
 
 double autocorrelation (std::vector<double> x, long unsigned int lag){
 	assert (lag < x.size() && "lag needs to be smaller than vector size\n");
-	std::vector<double> front = x;
-	std::vector<double> back = x;
-	for(long unsigned int i=0; i<lag; ++i){
-		front.pop_back();
-		//std::reverse(back.begin(), back.end()); // first becomes last, reverses the vector
-		//back.pop_back(); // pop last
-		//std::reverse(back.begin(), back.end());
-		back.erase(back.begin());
+	double avg_fb{}, avg_f{}, avg_b{}, avg_ff{}, avg_bb{};
+	for (long unsigned int i=0; i<x.size()-lag; ++i){
+		avg_f += x.at(i);
+		avg_ff += std::pow(x.at(i) ,2);
+		avg_b += x.at(i+lag);
+		avg_bb += std::pow(x.at(i+lag) ,2);
+		avg_fb += x.at(i)*x.at(i+lag);
 	}
-	return covariance(front, back);
+	avg_f /= (double)(x.size()-lag);
+	avg_b /= (double)(x.size()-lag);
+	avg_ff /= (double)(x.size()-lag);
+	avg_bb /= (double)(x.size()-lag);
+	avg_fb /= (double)(x.size()-lag);
+
+	return (avg_fb - (avg_f * avg_b))/(std::sqrt(avg_ff - std::pow(avg_f, 2)) * std::sqrt(avg_bb - std::pow(avg_b, 2)));
 }
 
 /****************************************************************

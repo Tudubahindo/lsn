@@ -55,6 +55,7 @@ std::tuple<double, double> Energy(double step_length, double mu, double sigma,
     double running_H{};
     double running_H2{};
     double sigma_H{};
+	std::vector<double> H_ac;
     long rate{};
 
     for (int i = 0; i < blocknum; ++i) {
@@ -78,6 +79,8 @@ std::tuple<double, double> Energy(double step_length, double mu, double sigma,
                      std::pow(sigma, 4);
 			if (verbose == true && calibration == false) 
 				hist_buffer << sampler.x << "\n";
+			if (verbose == true && calibration == true) 
+				H_ac.push_back(sampler.x);
         }
 
         H /= (double)blocksize;
@@ -106,6 +109,14 @@ std::tuple<double, double> Energy(double step_length, double mu, double sigma,
 		if (calibration == false) {
 			out.open("output_hist.dat");
 			out << hist_buffer.str();
+			out.close();
+		}
+
+		if (calibration == true) {
+			out.open("output_autoc.dat");
+			for (int i=0; i<blocksize; ++i){
+				out << autocorrelation(H_ac, i) << "\n";
+			}
 			out.close();
 		}
 	}
@@ -230,6 +241,10 @@ int main(int argc, char *argv[]) {
     out.open("output.dat");
     out << buffer.str();
     out.close();
+
+	/*for (int i=0; i<100; ++i)
+		std::cerr << std::get<0>(Energy(step_length, -1.42806, 0.0145151, rnd, false, false)) << "\t" << std::get<1>(Energy(step_length, -1.42806, 0.0145151, rnd, false, false)) << "\n";
+	*/
 
     rnd.SaveSeed();
     return 0;

@@ -214,7 +214,7 @@ int main(int argc, char *argv[]) {
         buffer << r_s << "\t" << sigma_s << "\t" << r_p << "\t" << sigma_p << "\n";
     }
 
-	for (int i=0; i<1000; ++i){
+	for (int i=0; i<10*blocksize; ++i){
 		buffer_autoc << autocorrelation(s_orbital, i) << "\t" << autocorrelation(p_orbital, i) << "\n";
 	}
 

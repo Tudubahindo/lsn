@@ -2,7 +2,7 @@ l1		c++ done / ipynb done (todo: chi2 test 4 fit)
 l2		c++ done / ipynb done (todo: chi2 test 4 fit; accept-reject)
 l3		c++ done / ipynb done
 l4		c++ done
-l5		c++ done
+l5		c++ done / ipynb done (todo: re-order things a bit especially in the nb, also maybe implement block-avg for far-case after cut)
 l6		todo
 l7		todo
 l8		c++ done (maybe revise idk, smth weird going on)
