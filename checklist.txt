@@ -5,7 +5,7 @@ l4		c++ done
 l5		c++ done / ipynb done (todo: re-order things a bit especially in the nb, also maybe implement block-avg for far-case after cut)
 l6		todo
 l7		todo
-l8		c++ done (maybe revise idk, smth weird going on)
+l8		c++ done / ipynb done (todo: make prettier animation w/ colors et similar, maybe revise text)
 l9		c++ done (need to code in the improvements suggested by Alessio Sr Raino)
 l10		todo (I mean...)
 l11		in progress
