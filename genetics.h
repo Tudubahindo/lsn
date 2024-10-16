@@ -8,8 +8,8 @@ _/    _/  _/_/_/  _/_/_/_/ email: Davide.Galli@unimi.it
 *****************************************************************
 *****************************************************************/
 
-#include "../random.h"
-#include "../stats.h"
+#include "random.h"
+#include "stats.h"
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
@@ -23,8 +23,8 @@ _/    _/  _/_/_/  _/_/_/_/ email: Davide.Galli@unimi.it
 #include <vector>
 #define _USE_MATH_DEFINES
 
-#ifndef __l09_utils__
-#define __l09_utils__
+#ifndef __genetics__
+#define __genetics__
 
 typedef std::tuple<double, double> city;
 
@@ -59,6 +59,8 @@ class chromosome {
 
     chromosome(map m, Random &rnd);
 
+    chromosome(map m, std::vector<long unsigned int> in);
+
     chromosome(chromosome p, chromosome m, int stop);
 
     void mutation_random_swap(Random &rnd);
@@ -74,6 +76,8 @@ class chromosome {
     double fit_getter() const;
 
     std::string print() const;
+
+    std::vector<long unsigned int> intprint() const;
 };
 
 inline bool operator<(const chromosome &lhs, const chromosome &rhs) { return lhs.fit_getter() < rhs.fit_getter(); }

@@ -1,0 +1,15 @@
+
+main.exe:11167 terminated with signal 11 at PC=701d2a5d7235 SP=7ffe7c99c7f0.  Backtrace:
+/lib/x86_64-linux-gnu/libmpich.so.12(+0x1d7235)[0x701d2a5d7235]
+/lib/x86_64-linux-gnu/libmpich.so.12(+0x1d724b)[0x701d2a5d724b]
+/lib/x86_64-linux-gnu/libmpich.so.12(+0x1d724b)[0x701d2a5d724b]
+/lib/x86_64-linux-gnu/libmpich.so.12(+0x1d724b)[0x701d2a5d724b]
+/lib/x86_64-linux-gnu/libmpich.so.12(+0x1d724b)[0x701d2a5d724b]
+/lib/x86_64-linux-gnu/libmpich.so.12(+0x1d7259)[0x701d2a5d7259]
+/lib/x86_64-linux-gnu/libmpich.so.12(+0x1d7259)[0x701d2a5d7259]
+/lib/x86_64-linux-gnu/libmpich.so.12(+0x233ea9)[0x701d2a633ea9]
+/lib/x86_64-linux-gnu/libmpich.so.12(PMPI_Finalize+0x16)[0x701d2a4e3026]
+./main.exe(+0x7288)[0x5a7aec33f288]
+/lib/x86_64-linux-gnu/libc.so.6(+0x29d90)[0x701d29c29d90]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x80)[0x701d29c29e40]
+./main.exe(+0x7555)[0x5a7aec33f555]

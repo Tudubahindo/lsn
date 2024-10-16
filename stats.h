@@ -19,32 +19,30 @@ _/    _/  _/_/_/  _/_/_/_/ email: Davide.Galli@unimi.it
 #ifndef __lsn_statistics__
 #define __lsn_statistics__
 
-double covariance (std::vector<double> x, std::vector<double> y);
+double covariance(std::vector<double> x, std::vector<double> y);
 
-double autocorrelation (std::vector<double> x, long unsigned int lag);
+double autocorrelation(std::vector<double> x, long unsigned int lag);
 
 template <typename T>
-class SquareMatrix
-{
+class SquareMatrix {
     std::vector<T> inner;
     long unsigned int dim;
 
-public:
+  public:
+    SquareMatrix(long unsigned int d);
 
-    SquareMatrix (long unsigned int d);
-
-    T& operator()(long unsigned int row, long unsigned int column);
+    T &operator()(long unsigned int row, long unsigned int column);
 };
 
 template <typename T>
-SquareMatrix<T>::SquareMatrix (long unsigned int d) : dim (d) {
-    inner.resize(dim*dim);
+SquareMatrix<T>::SquareMatrix(long unsigned int d) : dim(d) {
+    inner.resize(dim * dim);
 }
 
 template <typename T>
-T& SquareMatrix<T>::operator()(long unsigned int row, long unsigned int column) {
-	assert(row<dim && column<dim && "out of bounds\n");
-    return inner.at(dim*row + column);
+T &SquareMatrix<T>::operator()(long unsigned int row, long unsigned int column) {
+    assert(row < dim && column < dim && "out of bounds\n");
+    return inner.at(dim * row + column);
 }
 
 #endif // __Random_Sim__

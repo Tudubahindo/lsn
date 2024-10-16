@@ -8,9 +8,10 @@ _/    _/  _/_/_/  _/_/_/_/ email: Davide.Galli@unimi.it
 *****************************************************************
 *****************************************************************/
 
+#include "../genetics.h"
 #include "../random.h"
 #include "../stats.h"
-#include "utils.h"
+#include "mpi.h"
 #include <cmath>
 #include <fstream>
 #include <iostream>
@@ -21,20 +22,83 @@ _/    _/  _/_/_/  _/_/_/_/ email: Davide.Galli@unimi.it
 #include <vector>
 #define _USE_MATH_DEFINES
 
-//---------------------------------------------------------------------------------------------------------------------------------------
+int main(int argc, char *argv[]) {
 
-bool genetic_algo(int popsize, int total, map in_map, std::string filename, Random &rnd) {
+    // first thing first, let's initialize MPI
+    int size, rank;
+    MPI_Init(&argc, &argv);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    // read input file
+    std::string filename;
+    if (argc < 2) {
+        std::cout << "Program usage: <file_name>\nType in the name of the file you want to use: ";
+        std::cin >> filename;
+        std::cout << "\n";
+    } else {
+        filename = argv[1];
+    }
+
+    std::ifstream in(filename);
+
+    if (!in) { // checks for errors while opening file
+        std::error_code err_code(errno, std::system_category());
+        std::cerr << "Error opening \"" << filename << "\" with error: "
+                  << err_code.message() << std::endl;
+        return 2;
+    }
+
+    std::vector<city> cities;
+    while (in.good()) {
+        double x, y;
+        in >> x >> y;
+        cities.push_back({x, y});
+    }
+    in.close();
+    cities.pop_back(); // weird error
+
+    Random rnd;
+    int seed[4];
+    int p1, p2;
+    std::ifstream Primes("Primes");
+    if (Primes.is_open()) {
+        Primes >> p1 >> p2;
+    } else
+        std::cerr << "PROBLEM: Unable to open Primes" << std::endl;
+    Primes.close();
+
+    std::ifstream input("seed.in");
+    std::string property;
+    if (input.is_open()) {
+        while (!input.eof()) {
+            input >> property;
+            if (property == "RANDOMSEED") {
+                input >> seed[0] >> seed[1] >> seed[2] >> seed[3];
+                seed[3] += rank;
+                rnd.SetRandom(seed, p1, p2);
+            }
+        }
+        input.close();
+    } else {
+        std::cerr << "PROBLEM: Unable to open seed.in" << std::endl;
+    }
+
+    //---------------------------------------------------------------------------------------------------
+
     static constexpr double Pmutation = 0.02; // 0.98^4 ~ 0.92
     static constexpr double Pcrossover = 0.6;
+    static constexpr int popsize = 100;
+    static constexpr int total = 100;
     std::stringstream buffer;
+
+    map city_map(cities);
 
     std::vector<chromosome> people;
     for (int i = 0; i < popsize; ++i) {
-        chromosome slave = chromosome(in_map, rnd);
+        chromosome slave = chromosome(city_map, rnd);
         people.push_back(slave);
     }
-
-    // std::sort(people.rbegin(), people.rend());
 
     bool ok = true;
     for (int generation = 0; generation < total; ++generation) {
@@ -49,8 +113,8 @@ bool genetic_algo(int popsize, int total, map in_map, std::string filename, Rand
             chromosome daughter = people.at(mother);
 
             if (cross < Pcrossover) {
-                son = chromosome(people.at(father), people.at(mother), in_map.cities.size() / 2);
-                daughter = chromosome(people.at(mother), people.at(father), in_map.cities.size() / 2);
+                son = chromosome(people.at(father), people.at(mother), city_map.cities.size() / 2);
+                daughter = chromosome(people.at(mother), people.at(father), city_map.cities.size() / 2);
             }
             son.untangle();
             daughter.untangle();
@@ -93,109 +157,56 @@ bool genetic_algo(int popsize, int total, map in_map, std::string filename, Rand
         }
 
         std::sort(people.rbegin(), people.rend());
-		double avg_L{};
-		int half = popsize/2;
-		for (int i = 0; i < half; ++i){
-			avg_L += people.at(i).L();
-		}
-		avg_L /= half;
-
-        buffer << generation << "\t" << people.at(0).check() << "\t" << people.at(0).L() << "\t" << avg_L << "\t" << people.at(0).fit_getter() << "\t" << "\n";
-    }
-
-    std::ofstream out;
-    out.open("verbose_"+filename);
-    for (auto i : people) {
-        out << i.print() << "\n";
-    }
-    out.close();
-
-	out.open(filename);
-    out << buffer.str();
-    out.close();
-    
-	return ok;
-}
-
-int main(int argc, char *argv[]) {
-
-    Random rnd;
-    int seed[4];
-    int p1, p2;
-    std::ifstream Primes("Primes");
-    if (Primes.is_open()) {
-        Primes >> p1 >> p2;
-    } else
-        std::cerr << "PROBLEM: Unable to open Primes" << std::endl;
-    Primes.close();
-
-    std::ifstream input("seed.in");
-    std::string property;
-    if (input.is_open()) {
-        while (!input.eof()) {
-            input >> property;
-            if (property == "RANDOMSEED") {
-                input >> seed[0] >> seed[1] >> seed[2] >> seed[3];
-                rnd.SetRandom(seed, p1, p2);
-            }
+        double avg_L{};
+        int half = popsize / 2;
+        for (int i = 0; i < half; ++i) {
+            avg_L += people.at(i).L();
         }
-        input.close();
-    } else
-        std::cerr << "PROBLEM: Unable to open seed.in" << std::endl;
+        avg_L /= half;
 
-    //---------------------------------------------------------------------------------------------------
+        if (rank == 0)
+            std::cout << generation << "\t" << people.at(0).check() << "\t" << people.at(0).L() << "\t" << avg_L << "\t" << people.at(0).fit_getter() << "\t"
+                      << "\n";
 
-    static constexpr int Ncities = 34;
-    static constexpr double radius = 1.0;
-    static constexpr int popsize = 100;
-    std::vector<city> circle;
-    std::vector<city> square;
-    std::stringstream buffer;
+        if (generation % 10 == 9) {
+            long unsigned int *receiver = new long unsigned int[size * cities.size()];
+            std::vector<long unsigned int> sender = people.at(0).intprint();
+            std::vector<long unsigned int> inserter{};
+            MPI_Allgather(sender.data(), cities.size(), MPI_UNSIGNED_LONG, receiver, cities.size(), MPI_UNSIGNED_LONG, MPI_COMM_WORLD);
+            int num = static_cast<int>(std::floor(size * rnd.Rannyu()));
+            for (long unsigned int j = 0; j < cities.size(); ++j) {
+                inserter.push_back(receiver[num * cities.size() + j]);
+            }
+            chromosome slave = chromosome(city_map, inserter);
+            people.back() = slave;
+            delete[] receiver;
+        }
+    }
 
-    for (int i = 0; i < Ncities; ++i) {
-        double theta = 2 * M_PI * rnd.Rannyu();
-        double x = radius * std::cos(theta);
-        double y = radius * std::sin(theta);
-        city newcity = {x, y};
-        circle.push_back(newcity);
-        buffer << x << "\t" << y << "\n";
+    long unsigned int *receiver = new long unsigned int[size * cities.size()];
+    std::vector<long unsigned int> sender = people.at(0).intprint();
+
+    MPI_Gather(sender.data(), cities.size(), MPI_UNSIGNED_LONG, receiver, cities.size(), MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+    if (rank == 0) {
+        for (int i = 0; i < size; ++i) {
+            for (long unsigned int j = 0; j < cities.size(); ++j) {
+                buffer << receiver[i * cities.size() + j] << "\t";
+            }
+            buffer << "\n";
+        }
     }
 
     std::ofstream out;
-    out.open("map_circle.dat");
+    out.open("test.dat");
     out << buffer.str();
     out.close();
 
-    buffer.str(std::string());
+    delete[] receiver;
 
-    for (int i = 0; i < Ncities; ++i) {
-        double x = 2 * rnd.Rannyu() - 1;
-        double y = 2 * rnd.Rannyu() - 1;
-        city newcity = {x, y};
-        square.push_back(newcity);
-        buffer << x << "\t" << y << "\n";
-    }
-
-    out.open("map_square.dat");
-    out << buffer.str();
-    out.close();
-
-    map square_map(square);
-    map circle_map(circle);
-
-    chromosome test = chromosome(circle_map, rnd);
-
-    out.open("output_test.dat");
-    out << test.print() << "\n";
-    test.untangle();
-    out << test.print();
-    out.close();
-
-    std::cerr << "\n"
-              << genetic_algo(popsize, 300, square_map, "output_square.dat", rnd) << "\n";
+    MPI_Finalize();
 
     rnd.SaveSeed();
-    return 0;
+    return (!ok);
 }
 
 /****************************************************************

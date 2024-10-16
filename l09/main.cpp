@@ -10,7 +10,7 @@ _/    _/  _/_/_/  _/_/_/_/ email: Davide.Galli@unimi.it
 
 #include "../random.h"
 #include "../stats.h"
-#include "utils.h"
+#include "../genetics.h"
 #include <cmath>
 #include <fstream>
 #include <iostream>

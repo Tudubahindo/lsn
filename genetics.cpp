@@ -8,8 +8,8 @@ _/    _/  _/_/_/  _/_/_/_/ email: Davide.Galli@unimi.it
 *****************************************************************
 *****************************************************************/
 
-#include "utils.h"
-#include "../stats.h"
+#include "genetics.h"
+#include "stats.h"
 
 double d2(city a, city b) {
     return std::pow(std::get<0>(a) - std::get<0>(b), 2) + std::pow(std::get<1>(a) - std::get<1>(b), 2);
@@ -126,7 +126,13 @@ chromosome::chromosome(map m, Random &rnd) {
         genes.push_back(i);
     }
     scramble(rnd);
-	untangle();
+    untangle();
+    fitness = std::pow(100.0 / L(), 4);
+}
+
+chromosome::chromosome(map m, std::vector<long unsigned int> in) {
+    genes = in;
+    c = std::make_shared<map>(m);
     fitness = std::pow(100.0 / L(), 4);
 }
 
@@ -289,6 +295,10 @@ std::string chromosome::print() const {
         }
     }
     return buffer.str();
+}
+
+std::vector<long unsigned int> chromosome::intprint() const {
+    return genes;
 }
 
 int selection(std::vector<chromosome> &population, double num) {
