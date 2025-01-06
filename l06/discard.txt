@@ -1,0 +1,80 @@
+'''
+import matplotlib
+import matplotlib.pyplot as plt
+import math
+import pandas as pd
+import numpy as np
+
+variables = ['total_energy', 'specific_heat', 'susceptibility', 'magnetization']
+T = [0, 1]
+algos = ['gibbs', 'mrt2']
+
+pre_calibration, calibration = dict(), dict()
+blocks, cycles, temperature = dict(), dict(), dict()
+for var in variables:
+    pre_calibration[var], calibration[var] = dict(), dict()
+    blocks[var], cycles[var], temperature[var] = dict(), dict(), dict()
+    for algo in algos:
+        pre_calibration[var][algo], calibration[var][algo] = dict(), dict()
+        blocks[var][algo], cycles[var][algo], temperature[var][algo] = dict(), dict(), dict()
+        for t in T:
+            name = algo + '_calibration'
+            if h > 0:
+                name = name + '_infinity'
+            else:
+                name = name + '_0'
+            pre_calibration[var][algo][t] = pd.read_csv(f'ising_{name}/out/{var}.dat', delimiter='\t')
+            blocks[var][algo][t] = pre_calibration[var][algo][t].iloc[-1, 0]
+            cycles[var][algo][t] = int(pre_calibration[var][algo][t].shape[0] / blocks[var][algo][t]) #n of cycles is n of rows / n of blocks
+            cycles[var][algo][t] = np.arange(cycles[var][algo][t])
+            temperature[var][algo][t] = (cycles[var][algo][t]+5)/10
+
+            #create a data frame dictionary to store data frames
+            calibration[var][algo][t] = {elem : pd.DataFrame() for elem in cycles[var][algo][t]}
+            for key in calibration[var][algo][t].keys():
+                calibration[var][algo][t][key] = pre_calibration[var][algo][t].iloc[blocks[var][algo][t] * key : blocks[var][algo][t] * (key+1)]
+                #print(var, algo, t, temperature[var][algo][t][key])
+                #print(calibration[var][algo][t][key])
+                
+
+blocksize = 1000
+x, std = dict(), dict()
+for var in variables:
+    x[var], std[var] = dict(), dict()
+    for algo in algos:
+        x[var][algo], std[var][algo] = dict(), dict()
+        for h in mag:
+            x[var][algo][h], std[var][algo][h] = list(), list()
+            for key in data[var][algo][h].keys():
+                x[var][algo][h].append(data[var][algo][h][key].iloc[-1,2])
+                std[var][algo][h].append(data[var][algo][h][key].iloc[-1,3])
+                #print(x[var][algo][h][key], std[var][algo][h][key])
+
+fig, axs = plt.subplots(4, 2, figsize=(17,20))
+for ax, var in zip(axs, variables):
+    flag = 0
+    for a, algo in zip(ax, algos):
+        a.errorbar(temperature[var][algo][flag], x[var][algo][flag], yerr=std[var][algo][flag])
+        a.set_title(var+' ('+algo+')')
+        a.set_xlabel('T', loc='right')
+        a.set_ylabel(var, loc='top')
+        a.grid(True)
+        #ax[variable].legend(loc='upper center', ncol=3, fancybox=False)
+        #a.legend()
+    
+plt.show()
+
+
+fig, axs = plt.subplots(4, 2, figsize=(17,20))
+for ax, var in zip(axs, variables):
+    for a, algo in zip(ax, algos):
+        for t in T:
+            a.errorbar(calibration[var][algo][t][5]['BLOCK:'], calibration[var][algo][t][5].iloc[:,1], yerr=0, label=t)
+        a.set_title(var+' ('+algo+')')
+        a.set_xlabel('steps', loc='right')
+        a.set_ylabel(var, loc='top')
+        a.grid(True)
+        a.legend(loc='upper center', ncol=3, fancybox=False)
+    
+plt.show()
+'''

@@ -37,14 +37,15 @@ struct map {
     SquareMatrix<double> distances;
 
     map(std::vector<city> c);
+	std::vector<long unsigned int> bruteforce();
 };
 
 class chromosome {
 
   private:
-    std::vector<long unsigned int> genes;
-    std::shared_ptr<map> c;
-    double fitness;
+    std::vector<long unsigned int> _genes;
+    std::shared_ptr<map> _c;
+    double _fitness;
 
   public:
     bool check();
@@ -55,13 +56,13 @@ class chromosome {
 
     bool is_tangled();
 
-    void untangle();
+    void untangle(Random &rnd);
 
-    chromosome(map m, Random &rnd);
+    chromosome(map m, bool test, Random &rnd);
 
     chromosome(map m, std::vector<long unsigned int> in);
 
-    chromosome(chromosome p, chromosome m, int stop);
+    chromosome(chromosome p, chromosome m, int stop, Random &rnd);
 
     void mutation_random_swap(Random &rnd);
 

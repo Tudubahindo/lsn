@@ -32,12 +32,24 @@ int main(int argc, char *argv[]) {
 
     // read input file
     std::string filename;
+	std::string option;
+	bool flag = false;
     if (argc < 2) {
-        std::cout << "Program usage: <file_name>\nType in the name of the file you want to use: ";
+        std::cout << "Program usage: [-x] <file_name>\nType in the name of the file you want to use: ";
         std::cin >> filename;
         std::cout << "\n";
     } else {
-        filename = argv[1];
+		if (argc > 2) {
+			option = argv[1];
+			if (option[0] == '-') {
+				filename = argv[2];
+				flag = true;
+			} else {
+				filename = option;
+			}
+		} else {
+			filename = argv[1];
+		}
     }
 
     std::ifstream in(filename);
@@ -86,19 +98,22 @@ int main(int argc, char *argv[]) {
 
     //---------------------------------------------------------------------------------------------------
 
-    static constexpr double Pmutation = 0.02; // 0.98^4 ~ 0.92
+    static constexpr double Pmutation = 0.1;
     static constexpr double Pcrossover = 0.6;
-    static constexpr int popsize = 100;
-    static constexpr int total = 100;
+    static constexpr int popsize = 500;
+    static constexpr int total = 1000;
     std::stringstream buffer;
 
     map city_map(cities);
 
     std::vector<chromosome> people;
     for (int i = 0; i < popsize; ++i) {
-        chromosome slave = chromosome(city_map, rnd);
+        chromosome slave = chromosome(city_map, 0, rnd);
         people.push_back(slave);
     }
+
+	std::sort(people.rbegin(), people.rend());
+	chromosome best = people.at(0);
 
     bool ok = true;
     for (int generation = 0; generation < total; ++generation) {
@@ -113,11 +128,11 @@ int main(int argc, char *argv[]) {
             chromosome daughter = people.at(mother);
 
             if (cross < Pcrossover) {
-                son = chromosome(people.at(father), people.at(mother), city_map.cities.size() / 2);
-                daughter = chromosome(people.at(mother), people.at(father), city_map.cities.size() / 2);
+                son = chromosome(people.at(father), people.at(mother), city_map.cities.size() / 2, rnd);
+                daughter = chromosome(people.at(mother), people.at(father), city_map.cities.size() / 2, rnd);
             }
-            son.untangle();
-            daughter.untangle();
+            son.untangle(rnd);
+            daughter.untangle(rnd);
 
             newgen.push_back(son);
             newgen.push_back(daughter);
@@ -149,7 +164,7 @@ int main(int argc, char *argv[]) {
                 people.at(i).mutation_inversion(rnd);
             }
 
-            people.at(i).untangle();
+            people.at(i).untangle(rnd);
 
             if (people.at(i).check() == false) {
                 ok = false;
@@ -164,11 +179,15 @@ int main(int argc, char *argv[]) {
         }
         avg_L /= half;
 
+		if (people.at(0).L() < best.L()) {
+			best = people.at(0);
+		}
+
         if (rank == 0)
             std::cout << generation << "\t" << people.at(0).check() << "\t" << people.at(0).L() << "\t" << avg_L << "\t" << people.at(0).fit_getter() << "\t"
                       << "\n";
 
-        if (generation % 10 == 9) {
+        if (generation % 10 == 9 && flag==true) {
             long unsigned int *receiver = new long unsigned int[size * cities.size()];
             std::vector<long unsigned int> sender = people.at(0).intprint();
             std::vector<long unsigned int> inserter{};
@@ -184,7 +203,7 @@ int main(int argc, char *argv[]) {
     }
 
     long unsigned int *receiver = new long unsigned int[size * cities.size()];
-    std::vector<long unsigned int> sender = people.at(0).intprint();
+    std::vector<long unsigned int> sender = best.intprint();
 
     MPI_Gather(sender.data(), cities.size(), MPI_UNSIGNED_LONG, receiver, cities.size(), MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
     if (rank == 0) {
@@ -196,8 +215,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
+	std::string outname = "output";
+	if (flag) outname += "_x";
+	outname += ".dat";
     std::ofstream out;
-    out.open("test.dat");
+    out.open(outname);
     out << buffer.str();
     out.close();
 

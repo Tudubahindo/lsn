@@ -24,13 +24,13 @@ _/    _/  _/_/_/  _/_/_/_/ email: Davide.Galli@unimi.it
 //---------------------------------------------------------------------------------------------------------------------------------------
 
 bool genetic_algo(int popsize, int total, map in_map, std::string filename, Random &rnd) {
-    static constexpr double Pmutation = 0.02; // 0.98^4 ~ 0.92
+    static constexpr double Pmutation = 0.1;
     static constexpr double Pcrossover = 0.6;
     std::stringstream buffer;
 
     std::vector<chromosome> people;
     for (int i = 0; i < popsize; ++i) {
-        chromosome slave = chromosome(in_map, rnd);
+        chromosome slave = chromosome(in_map, false, rnd);
         people.push_back(slave);
     }
 
@@ -49,11 +49,11 @@ bool genetic_algo(int popsize, int total, map in_map, std::string filename, Rand
             chromosome daughter = people.at(mother);
 
             if (cross < Pcrossover) {
-                son = chromosome(people.at(father), people.at(mother), in_map.cities.size() / 2);
-                daughter = chromosome(people.at(mother), people.at(father), in_map.cities.size() / 2);
+                son = chromosome(people.at(father), people.at(mother), in_map.cities.size() / 2, rnd);
+                daughter = chromosome(people.at(mother), people.at(father), in_map.cities.size() / 2, rnd);
             }
-            son.untangle();
-            daughter.untangle();
+            son.untangle(rnd);
+            daughter.untangle(rnd);
 
             newgen.push_back(son);
             newgen.push_back(daughter);
@@ -85,7 +85,7 @@ bool genetic_algo(int popsize, int total, map in_map, std::string filename, Rand
                 people.at(i).mutation_inversion(rnd);
             }
 
-            people.at(i).untangle();
+            people.at(i).untangle(rnd);
 
             if (people.at(i).check() == false) {
                 ok = false;
@@ -183,16 +183,25 @@ int main(int argc, char *argv[]) {
     map square_map(square);
     map circle_map(circle);
 
-    chromosome test = chromosome(circle_map, rnd);
+    chromosome test = chromosome(circle_map, true, rnd);
 
     out.open("output_test.dat");
     out << test.print() << "\n";
-    test.untangle();
+    test.untangle(rnd);
     out << test.print();
     out.close();
 
     std::cerr << "\n"
               << genetic_algo(popsize, 300, square_map, "output_square.dat", rnd) << "\n";
+
+    /*buffer.str(std::string()); //DO NOT UNCOMMENT unless the number of cities is below 15
+	std::vector<long unsigned int> brute = square_map.bruteforce();
+	for (long unsigned int i = 0; i < brute.size(); ++i) {
+		buffer << brute.at(i) << "\t";
+	}
+    out.open("output_bruteforce.dat");
+    out << buffer.str();
+    out.close();*/
 
     rnd.SaveSeed();
     return 0;

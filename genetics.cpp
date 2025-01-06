@@ -27,16 +27,48 @@ map::map(std::vector<city> c) : cities(c), distances(SquareMatrix<double>(c.size
     }
 }
 
+std::vector<long unsigned int> map::bruteforce() {
+	std::vector<long unsigned int> best;
+	std::vector<long unsigned int> slave;
+	double shortest_path{};
+	for (long unsigned int i = 1; i < cities.size(); ++i){
+		best.push_back(i);
+		slave.push_back(i);
+		shortest_path += distances(i, i-1);
+	}
+	shortest_path += distances(0, cities.size()-1);
+
+	while (std::next_permutation(slave.begin(), slave.end())) {
+		double path{};
+		for (long unsigned int i = 1; i < slave.size(); ++i) {
+			path += distances(slave.at(i), slave.at(i-1));
+		}
+		path += distances(slave.at(0), 0);
+		path += distances(slave.size()-1, 0);
+
+		if (path < shortest_path){
+			shortest_path = path;
+			best = slave;
+		}
+	}
+
+	best.insert(best.begin(), 0);
+	for (long unsigned int i = 0; i < best.size(); ++i) {
+		++best.at(i);
+	}
+	return best;
+}
+
 bool chromosome::check() {
     bool flag = true;
-    if (genes.at(0) != 1)
+    if (_genes.at(0) != 1)
         flag = false;
-    if (genes.size() != c->cities.size())
+    if (_genes.size() != _c->cities.size())
         flag = false;
-    for (long unsigned int i = 1; i <= genes.size(); ++i) {
+    for (long unsigned int i = 1; i <= _genes.size(); ++i) {
         bool found = false;
-        for (long unsigned int j = 0; j < genes.size(); ++j) {
-            if (genes.at(j) == i) {
+        for (long unsigned int j = 0; j < _genes.size(); ++j) {
+            if (_genes.at(j) == i) {
                 found = true;
             }
         }
@@ -47,13 +79,13 @@ bool chromosome::check() {
 }
 
 void chromosome::swap(int a, int b) {
-    int slave = genes.at(a);
-    genes.at(a) = genes.at(b);
-    genes.at(b) = slave;
+    int slave = _genes.at(a);
+    _genes.at(a) = _genes.at(b);
+    _genes.at(b) = slave;
 }
 
 void chromosome::scramble(Random &rnd) {
-    int N = genes.size() - 2;
+    int N = _genes.size() - 2;
     if (N > 0) {
         for (int i = 0; i < 10 * N; ++i) {
             int first = 1 + static_cast<int>(std::floor((N + 1) * rnd.Rannyu()));
@@ -67,15 +99,15 @@ void chromosome::scramble(Random &rnd) {
 
 bool chromosome::is_tangled() {
     bool flag = false;
-    for (long unsigned int j = 1; j < genes.size() - 1; ++j) {
-        if (c->distances(genes.back() - 1, genes.at(0) - 1) + c->distances(genes.at(j) - 1, genes.at(j + 1) - 1) > c->distances(genes.back() - 1, genes.at(j) - 1) + c->distances(genes.at(0) - 1, genes.at(j + 1) - 1)) {
+    for (long unsigned int j = 1; j < _genes.size() - 1; ++j) {
+        if (_c->distances(_genes.back() - 1, _genes.at(0) - 1) + _c->distances(_genes.at(j) - 1, _genes.at(j + 1) - 1) > _c->distances(_genes.back() - 1, _genes.at(j) - 1) + _c->distances(_genes.at(0) - 1, _genes.at(j + 1) - 1)) {
             flag = true;
         }
     }
 
-    for (long unsigned int i = 0; i < genes.size() - 3; ++i) {
-        for (long unsigned int j = i + 2; j < genes.size() - 1; ++j) {
-            if (c->distances(genes.at(i) - 1, genes.at(i + 1) - 1) + c->distances(genes.at(j) - 1, genes.at(j + 1) - 1) > c->distances(genes.at(i) - 1, genes.at(j) - 1) + c->distances(genes.at(i + 1) - 1, genes.at(j + 1) - 1)) {
+    for (long unsigned int i = 0; i < _genes.size() - 3; ++i) {
+        for (long unsigned int j = i + 2; j < _genes.size() - 1; ++j) {
+            if (_c->distances(_genes.at(i) - 1, _genes.at(i + 1) - 1) + _c->distances(_genes.at(j) - 1, _genes.at(j + 1) - 1) > _c->distances(_genes.at(i) - 1, _genes.at(j) - 1) + _c->distances(_genes.at(i + 1) - 1, _genes.at(j + 1) - 1)) {
                 flag = true;
             }
         }
@@ -84,12 +116,21 @@ bool chromosome::is_tangled() {
     return flag;
 }
 
-void chromosome::untangle() {
+void chromosome::untangle(Random &rnd) {
+	long unsigned int start = static_cast<int>(std::floor(_genes.size() * rnd.Rannyu())); //start untagling from a random point
+	for (long unsigned int j = 0; j < start; ++j) {
+        int slave = _genes.at(0);
+        for (long unsigned int i = 1; i < _genes.size(); ++i) {
+            _genes.at(i - 1) = _genes.at(i);
+        }
+        _genes.back() = slave;
+	}
+
     bool flag = true;
     while (flag == true) {
         flag = false;
-        for (long unsigned int j = 1; j < genes.size() - 1; ++j) {
-            if (c->distances(genes.back() - 1, genes.at(0) - 1) + c->distances(genes.at(j) - 1, genes.at(j + 1) - 1) > c->distances(genes.back() - 1, genes.at(j) - 1) + c->distances(genes.at(0) - 1, genes.at(j + 1) - 1)) {
+        for (long unsigned int j = 1; j < _genes.size() - 1; ++j) {
+            if (_c->distances(_genes.back() - 1, _genes.at(0) - 1) + _c->distances(_genes.at(j) - 1, _genes.at(j + 1) - 1) > _c->distances(_genes.back() - 1, _genes.at(j) - 1) + _c->distances(_genes.at(0) - 1, _genes.at(j + 1) - 1)) {
                 flag = true;
                 for (long unsigned int k = 0; k < 0.5 * (j + 1); ++k) {
                     swap(k, j - k);
@@ -97,9 +138,9 @@ void chromosome::untangle() {
             }
         }
 
-        for (long unsigned int i = 0; i < genes.size() - 3; ++i) {
-            for (long unsigned int j = i + 2; j < genes.size() - 1; ++j) {
-                if (c->distances(genes.at(i) - 1, genes.at(i + 1) - 1) + c->distances(genes.at(j) - 1, genes.at(j + 1) - 1) > c->distances(genes.at(i) - 1, genes.at(j) - 1) + c->distances(genes.at(i + 1) - 1, genes.at(j + 1) - 1)) {
+        for (long unsigned int i = 0; i < _genes.size() - 3; ++i) {
+            for (long unsigned int j = i + 2; j < _genes.size() - 1; ++j) {
+                if (_c->distances(_genes.at(i) - 1, _genes.at(i + 1) - 1) + _c->distances(_genes.at(j) - 1, _genes.at(j + 1) - 1) > _c->distances(_genes.at(i) - 1, _genes.at(j) - 1) + _c->distances(_genes.at(i + 1) - 1, _genes.at(j + 1) - 1)) {
                     flag = true;
                     for (long unsigned int k = 0; k < 0.5 * (j - i); ++k) {
                         swap(i + 1 + k, j - k);
@@ -109,101 +150,103 @@ void chromosome::untangle() {
         }
     }
 
-    while (genes.at(0) != 1) {
-        int slave = genes.at(0);
-        for (long unsigned int i = 1; i < genes.size(); ++i) {
-            genes.at(i - 1) = genes.at(i);
+    while (_genes.at(0) != 1) {
+        int slave = _genes.at(0);
+        for (long unsigned int i = 1; i < _genes.size(); ++i) {
+            _genes.at(i - 1) = _genes.at(i);
         }
-        genes.back() = slave;
+        _genes.back() = slave;
     }
-    fitness = std::pow(100.0 / L(), 4);
+    _fitness = std::pow(1.0 / L(), 4);
 }
 
-chromosome::chromosome(map m, Random &rnd) {
+chromosome::chromosome(map m, bool test, Random &rnd) {
     int N = m.cities.size();
-    c = std::make_shared<map>(m);
+    _c = std::make_shared<map>(m);
     for (int i = 1; i <= N; ++i) {
-        genes.push_back(i);
+        _genes.push_back(i);
     }
     scramble(rnd);
-    untangle();
-    fitness = std::pow(100.0 / L(), 4);
+    if (test == false) {
+		untangle(rnd);
+	}
+    _fitness = std::pow(1.0 / L(), 4);
 }
 
 chromosome::chromosome(map m, std::vector<long unsigned int> in) {
-    genes = in;
-    c = std::make_shared<map>(m);
-    fitness = std::pow(100.0 / L(), 4);
+    _genes = in;
+    _c = std::make_shared<map>(m);
+    _fitness = std::pow(1.0 / L(), 4);
 }
 
-chromosome::chromosome(chromosome p, chromosome m, int stop) {
+chromosome::chromosome(chromosome p, chromosome m, int stop, Random &rnd) {
     /*c = p.c;
     for (int i = 0; i < stop; ++i) {
-        genes.push_back(p.genes.at(i));
+        _genes.push_back(p._genes.at(i));
     }
 
-    for (long unsigned int i = 0; i < m.genes.size(); ++i) {
+    for (long unsigned int i = 0; i < m._genes.size(); ++i) {
         bool found = false;
-        for (long unsigned int j = 0; j < genes.size(); ++j) {
-            if (genes.at(j) == m.genes.at(i)) {
+        for (long unsigned int j = 0; j < _genes.size(); ++j) {
+            if (_genes.at(j) == m._genes.at(i)) {
                 found = true;
             }
         }
         if (found == false) {
-            genes.push_back(m.genes.at(i));
+            _genes.push_back(m._genes.at(i));
         }
     }
-    fitness = std::pow(100.0 / L(), 4);*/
+    _fitness = std::pow(100.0 / L(), 4);*/
 
-    c = p.c;
+    _c = p._c;
     for (int i = 0; i < stop; ++i) {
-        genes.push_back(p.genes.at(i));
+        _genes.push_back(p._genes.at(i));
     }
 
     long unsigned int i = 0;
-    while (genes.size() < m.genes.size()) {
+    while (_genes.size() < m._genes.size()) {
         bool found = false;
-        for (long unsigned int j = 0; j < genes.size(); ++j) {
-            if (genes.at(j) == m.genes.at(i)) {
+        for (long unsigned int j = 0; j < _genes.size(); ++j) {
+            if (_genes.at(j) == m._genes.at(i)) {
                 found = true;
             }
         }
         if (found == false) {
             bool tangle = false;
-            for (long unsigned int j = 0; j < genes.size() - 2; ++j) {
-                if (c->distances(m.genes.at(i) - 1, genes.back() - 1) + c->distances(genes.at(j) - 1, genes.at(j + 1) - 1) > c->distances(genes.at(j + 1) - 1, genes.back() - 1) + c->distances(genes.at(j) - 1, m.genes.at(i) - 1)) {
+            for (long unsigned int j = 0; j < _genes.size() - 2; ++j) {
+                if (_c->distances(m._genes.at(i) - 1, _genes.back() - 1) + _c->distances(_genes.at(j) - 1, _genes.at(j + 1) - 1) > _c->distances(_genes.at(j + 1) - 1, _genes.back() - 1) + _c->distances(_genes.at(j) - 1, m._genes.at(i) - 1)) {
                     tangle = true;
                 }
             }
 
             if (tangle == false) {
-                genes.push_back(m.genes.at(i));
+                _genes.push_back(m._genes.at(i));
                 i = -1;
             }
         }
         ++i;
 
-        if (i >= m.genes.size()) {
-            for (long unsigned int i = 0; i < m.genes.size(); ++i) {
+        if (i >= m._genes.size()) {
+            for (long unsigned int i = 0; i < m._genes.size(); ++i) {
                 bool found = false;
-                for (long unsigned int j = 0; j < genes.size(); ++j) {
-                    if (genes.at(j) == m.genes.at(i)) {
+                for (long unsigned int j = 0; j < _genes.size(); ++j) {
+                    if (_genes.at(j) == m._genes.at(i)) {
                         found = true;
                     }
                 }
                 if (found == false) {
-                    genes.push_back(m.genes.at(i));
+                    _genes.push_back(m._genes.at(i));
                     i = 0;
                 }
             }
         }
     }
-    untangle();
-    fitness = std::pow(100.0 / L(), 4);
+    untangle(rnd);
+    _fitness = std::pow(1.0 / L(), 4);
 }
 
 void chromosome::mutation_random_swap(Random &rnd) {
-    int N = genes.size() - 2;
+    int N = _genes.size() - 2;
     if (N > 0) {
         int first = 1 + static_cast<int>(std::floor((N + 1) * rnd.Rannyu()));
         int second = 1 + static_cast<int>(std::floor(N * rnd.Rannyu()));
@@ -211,41 +254,41 @@ void chromosome::mutation_random_swap(Random &rnd) {
             second = N + 1;
         swap(first, second);
     }
-    fitness = std::pow(100.0 / L(), 4);
+    _fitness = std::pow(1.0 / L(), 4);
 }
 
 void chromosome::mutation_shift(Random &rnd) {
-    int N = genes.size() - 2;
+    int N = _genes.size() - 2;
     if (N > 0) {
         int num = 1 + static_cast<int>(std::floor((N / 2) * rnd.Rannyu()));     // dimension of the subarray to switch forward (between 1 and N)
         int steps = 1 + static_cast<int>(std::floor((N / 2) * rnd.Rannyu()));   // number of steps forward (between 1 and N)
         int start = 1 + static_cast<int>(std::floor((N - num) * rnd.Rannyu())); // index of the start of said subarray (between 1 and N-num)
-        std::vector<long unsigned int> genes_extended = genes;
-        for (long unsigned int i = 1; i < genes.size(); ++i) {
-            genes_extended.push_back(genes.at(i));
+        std::vector<long unsigned int> _genes_extended = _genes;
+        for (long unsigned int i = 1; i < _genes.size(); ++i) {
+            _genes_extended.push_back(_genes.at(i));
         }
         for (int k = 0; k < steps; ++k) { // k max is steps-1 (k max is N-1)
             int j = start + k + num;
-            int slave = genes_extended.at(j);
+            int slave = _genes_extended.at(j);
             while (j > start + k) {
-                genes_extended.at(j) = genes_extended.at(j - 1);
+                _genes_extended.at(j) = _genes_extended.at(j - 1);
                 --j;
             };
-            genes_extended.at(start + k) = slave;
+            _genes_extended.at(start + k) = slave;
         }
-        for (long unsigned int i = 1; i < genes.size(); ++i) {
-            genes.at(i) = genes_extended.at(i);
+        for (long unsigned int i = 1; i < _genes.size(); ++i) {
+            _genes.at(i) = _genes_extended.at(i);
         }
 
         for (int i = 0; i < start - 1; ++i) {
-            genes.at(i + 1) = genes_extended.at(genes.size() + i);
+            _genes.at(i + 1) = _genes_extended.at(_genes.size() + i);
         }
     }
-    fitness = std::pow(100.0 / L(), 4);
+    _fitness = std::pow(1.0 / L(), 4);
 }
 
 void chromosome::mutation_permutation(Random &rnd) {
-    int N = genes.size() - 2;
+    int N = _genes.size() - 2;
     int Nhalf = N / 2;
     if (Nhalf > 0) {
         int num = 1 + static_cast<int>(std::floor(Nhalf * rnd.Rannyu()));                     // dimension of the 2 subarrays to permute
@@ -255,11 +298,11 @@ void chromosome::mutation_permutation(Random &rnd) {
             swap(start + i, start + num + space + i);
         }
     }
-    fitness = std::pow(100.0 / L(), 4);
+    _fitness = std::pow(1.0 / L(), 4);
 }
 
 void chromosome::mutation_inversion(Random &rnd) {
-    int N = genes.size() - 2;
+    int N = _genes.size() - 2;
     if (N > 0) {
         int num = 1 + static_cast<int>(std::floor(N * rnd.Rannyu()));           // dimension of the subarray to invert
         int start = 1 + static_cast<int>(std::floor((N - num) * rnd.Rannyu())); // index of the start of said subarray
@@ -270,27 +313,27 @@ void chromosome::mutation_inversion(Random &rnd) {
             --end;
         };
     }
-    fitness = std::pow(100.0 / L(), 4);
+    _fitness = std::pow(1.0 / L(), 4);
 }
 
 double chromosome::L() {
     double length{};
-    for (long unsigned int i = 1; i < genes.size(); ++i) {
-        length += c->distances(genes.at(i - 1) - 1, genes.at(i) - 1);
+    for (long unsigned int i = 1; i < _genes.size(); ++i) {
+        length += _c->distances(_genes.at(i - 1) - 1, _genes.at(i) - 1);
     }
-    length += c->distances(genes.back() - 1, genes.at(0) - 1);
+    length += _c->distances(_genes.back() - 1, _genes.at(0) - 1);
     return length;
 }
 
 double chromosome::fit_getter() const {
-    return fitness;
+    return _fitness;
 }
 
 std::string chromosome::print() const {
     std::stringstream buffer;
-    for (auto i : genes) {
+    for (auto i : _genes) {
         buffer << i;
-        if (i != genes.back()) {
+        if (i != _genes.back()) {
             buffer << "\t";
         }
     }
@@ -298,7 +341,7 @@ std::string chromosome::print() const {
 }
 
 std::vector<long unsigned int> chromosome::intprint() const {
-    return genes;
+    return _genes;
 }
 
 int selection(std::vector<chromosome> &population, double num) {
