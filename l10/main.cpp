@@ -75,6 +75,10 @@ int main(int argc, char *argv[]) {
     int p1, p2;
     std::ifstream Primes("Primes");
     if (Primes.is_open()) {
+		for (int i=0; i<rank; ++i) {
+			int trash;
+			Primes >> trash >> trash;
+		}
         Primes >> p1 >> p2;
     } else
         std::cerr << "PROBLEM: Unable to open Primes" << std::endl;
@@ -87,7 +91,7 @@ int main(int argc, char *argv[]) {
             input >> property;
             if (property == "RANDOMSEED") {
                 input >> seed[0] >> seed[1] >> seed[2] >> seed[3];
-                seed[3] += rank;
+                seed[3] += 10 + rank; //I tried some seeds and this is the best
                 rnd.SetRandom(seed, p1, p2);
             }
         }
@@ -99,8 +103,9 @@ int main(int argc, char *argv[]) {
     //---------------------------------------------------------------------------------------------------
 
     static constexpr double Pmutation = 0.1;
-    static constexpr double Pcrossover = 0.6;
+    static constexpr double Pcrossover = 0.4;
     static constexpr int popsize = 500;
+    static constexpr int cross_size = 50;
     static constexpr int total = 1000;
     std::stringstream buffer;
 
@@ -149,7 +154,7 @@ int main(int argc, char *argv[]) {
             double num_swap = rnd.Rannyu();
             double num_shift = rnd.Rannyu();
             double num_perm = rnd.Rannyu();
-            double num_inv = rnd.Rannyu();
+            //double num_inv = rnd.Rannyu();
 
             if (num_swap < Pmutation) {
                 people.at(i).mutation_random_swap(rnd);
@@ -160,9 +165,9 @@ int main(int argc, char *argv[]) {
             if (num_perm < Pmutation) {
                 people.at(i).mutation_permutation(rnd);
             }
-            if (num_inv < Pmutation) {
+            /*if (num_inv < Pmutation) {
                 people.at(i).mutation_inversion(rnd);
-            }
+            }*/
 
             people.at(i).untangle(rnd);
 
@@ -187,7 +192,7 @@ int main(int argc, char *argv[]) {
             std::cout << generation << "\t" << people.at(0).check() << "\t" << people.at(0).L() << "\t" << avg_L << "\t" << people.at(0).fit_getter() << "\t"
                       << "\n";
 
-        if (generation % 10 == 9 && flag==true) {
+        /*if (generation % 10 == 9 && flag==true) {
             long unsigned int *receiver = new long unsigned int[size * cities.size()];
             std::vector<long unsigned int> sender = people.at(0).intprint();
             std::vector<long unsigned int> inserter{};
@@ -199,7 +204,36 @@ int main(int argc, char *argv[]) {
             chromosome slave = chromosome(city_map, inserter);
             people.back() = slave;
             delete[] receiver;
+        }*/
+
+		if (generation % 10 == 9 && flag==true) {
+            long unsigned int *receiver = new long unsigned int[size * cross_size * cities.size()];
+            std::vector<long unsigned int> sender = people.at(0).intprint();
+			for (int k = 1; k < cross_size; ++k) {
+				std::vector<long unsigned int> slave = people.at(k).intprint();
+				sender.insert(sender.end(), slave.begin(), slave.end());
+			}
+            MPI_Allgather(sender.data(), cross_size * cities.size(), MPI_UNSIGNED_LONG, receiver, cross_size * cities.size(), MPI_UNSIGNED_LONG, MPI_COMM_WORLD);
+            //int num = static_cast<int>(std::floor(size * rnd.Rannyu()));
+			//num = rank+1;
+			//if (num == size) num = 0;
+			std::vector<chromosome> slave{};
+			for (int k = 0; k < cross_size; ++k) {
+				int number = static_cast<int>(std::floor(size * cross_size * rnd.Rannyu()));
+				std::vector<long unsigned int> inserter{};
+	            for (long unsigned int j = 0; j < cities.size(); ++j) {
+					//inserter.push_back(receiver[num * cities.size() * cross_size + k * cities.size() + j]);
+					inserter.push_back(receiver[number * cities.size() + j]);
+				}
+				slave.push_back(chromosome(city_map, inserter));
+			}
+
+            people.erase(people.end()-cross_size, people.end());
+            //people.erase(people.begin(), people.begin() + cross_size);
+			people.insert(people.end(), slave.begin(), slave.end());
+            delete[] receiver;
         }
+		//std::cerr << people.size() << "\n";
     }
 
     long unsigned int *receiver = new long unsigned int[size * cities.size()];

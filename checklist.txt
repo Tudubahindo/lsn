@@ -1,12 +1,12 @@
-l1		c++ done / ipynb done (todo: chi2 test 4 fit)
-l2		c++ done / ipynb done (todo: chi2 test 4 fit; accept-reject; invert function)
+l1		c++ done / ipynb done
+l2		c++ done / ipynb done
 l3		c++ done / ipynb done
-l4		c++ done / ipynb done (todo: remember to write why we need equilibration; maybe add interpolation; maybe add autocorrelation)
-l5		c++ done / ipynb done (todo: re-order things a bit especially in the nb, also maybe implement block-avg for far-case after cut)
-l6		c++ done / ipynb done (todo: superimpose (or at least show side-by-side) the theoretical value plots to the results; maybe add autocorrelation)
-l7		c++ done / ipynb done (todo: scrivi quello che hai fatto, magari tipo presto e non fare il solito mona che aspetta mille anni e poi se ne dimentica, va che io ti conosco sai)
-l8		c++ done / ipynb done (todo: make prettier animation w/ colors et similar, maybe revise text)
-l9		c++ done / ipynb done (todo: compare with exact solution, no matter what it takes) 
-l10		c++ done
-l11		ipynb done (maybe color in gray the assignment text)
-l12		ipynb done (maybe color in gray the assignment text; do the cool handwritten digit thing w/ the bamboo pad)
+l4		c++ done / ipynb done
+l5		c++ done / ipynb done
+l6		c++ done / ipynb done
+l7		c++ done / ipynb done
+l8		c++ done / ipynb done
+l9		c++ done / ipynb done
+l10		c++ done / ipynb done
+l11		ipynb done
+l12		ipynb done

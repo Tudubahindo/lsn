@@ -24,12 +24,12 @@ double f(double x) {
     return 0.5 * M_PI * std::cos(0.5 * M_PI * x);
 }
 
-double g(double x) {
-    return (1.0 - std::pow(M_PI, 2) / 24.0) * f(x) / (1.0 - std::pow(M_PI * x, 2) / 8.0);
+double p(double x) {
+	return (0.25*M_PI*x + 1.0) * (1.0 - x) / (M_PI/24.0 + 0.5);
 }
 
-double ICDF(double y, int n) {
-    return (4.0 * std::sqrt(2) / M_PI) * std::cos(std::atan(std::sqrt(2048.0 / (D * D * y * y * std::pow(M_PI, 6)) - 1.0)) / 3.0 - (2.0 * n + 1.0) * M_PI / 3.0);
+double g(double x) {
+    return f(x) / p(x);
 }
 
 typedef std::tuple<int, int, int> discrete_vector;
@@ -111,25 +111,17 @@ int main(int argc, char *argv[]) {
     double running_importance{};
     double running_importance2{};
 
-    /*std::cerr << ICDF(0.0, 0) << "\n";
-    std::cerr << ICDF(1.0, 0) << "\n";
-    std::cerr << ICDF(0.0, 1) << "\n";
-    std::cerr << ICDF(1.0, 1) << "\n";
-    std::cerr << ICDF(0.0, 2) << "\n";
-    std::cerr << ICDF(1.0, 2) << "\n";
-    std::cerr << ICDF(1.0194375, 2) << "\n";*/
-
     for (int i = 0; i < blocknum; ++i) {
         double avg{};
         double importance{};
         for (int j = 0; j < blocksize; ++j) {
             double num = rnd.Rannyu();
             avg += f(num);
-            importance += g(ICDF(num * 1.0194375, 2)); // because of numerical errors, the inverted function doesn't stop precisely at 1.0, but a little further. This correction halves the error from 6% to 3%
-            // std::cerr << ICDF(num, 2) << "\n";
+			importance += g(rnd.AcceptReject(0.0, 1.0, 1.6, p));
         }
         avg /= (double)blocksize;
         importance /= (double)blocksize;
+
         // std::cerr << avg << std::endl;
         double avg2 = std::pow(avg, 2);
         double importance2 = std::pow(importance, 2);
@@ -156,6 +148,7 @@ int main(int argc, char *argv[]) {
 
     //----------------------------------exercise 02.2---------------------------------------
 
+	rnd.SetRandom(seed, p1, p2);       // reset rnd
     static constexpr int length = 100; // length of the RW
 
     std::stringstream d_buffer;
@@ -163,13 +156,6 @@ int main(int argc, char *argv[]) {
 
     std::vector<discrete_vector> d_pos(total, {0, 0, 0});
     std::vector<continuous_vector> c_pos(total, {0., 0., 0.});
-
-    /*for (int k = 0; k < total; ++k) {
-        discrete_vector d_v = {0, 0, 0};
-        d_pos.push_back(d_v);
-        continuous_vector c_v = {0., 0., 0.};
-        c_pos.push_back(c_v);
-    }*/
 
     for (int i = 0; i < length; ++i) {
 
@@ -197,9 +183,6 @@ int main(int argc, char *argv[]) {
             }
             d_mod /= (double)blocksize;
             c_mod /= (double)blocksize;
-            // d_mod = std::sqrt(d_mod);
-            // c_mod = std::sqrt(c_mod);
-            //  std::cerr << avg << std::endl;
             double d_mod2 = std::pow(d_mod, 2);
             double c_mod2 = std::pow(c_mod, 2);
 
@@ -230,7 +213,7 @@ int main(int argc, char *argv[]) {
     c_out << c_buffer.str();
     c_out.close();
 
-    rnd.SaveSeed();
+    rnd.SaveSeed("seed2.out");
     return 0;
 }
 

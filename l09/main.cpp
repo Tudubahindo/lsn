@@ -82,7 +82,7 @@ bool genetic_algo(int popsize, int total, map in_map, std::string filename, Rand
                 people.at(i).mutation_permutation(rnd);
             }
             if (num_inv < Pmutation) {
-                people.at(i).mutation_inversion(rnd);
+                //people.at(i).mutation_inversion(rnd);
             }
 
             people.at(i).untangle(rnd);

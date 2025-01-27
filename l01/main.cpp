@@ -96,6 +96,9 @@ int main(int argc, char *argv[]) {
     out << buffer.str();
     out.close();
 
+    rnd.SaveSeed();
+	rnd.SetRandom(seed, p1, p2); // reset rnd
+
     static constexpr int TOT = 10000;
     static constexpr int M = 100; // 100 intervals
     static constexpr int throws = 100;
