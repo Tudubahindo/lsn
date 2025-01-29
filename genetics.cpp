@@ -28,35 +28,35 @@ map::map(std::vector<city> c) : cities(c), distances(SquareMatrix<double>(c.size
 }
 
 std::vector<long unsigned int> map::bruteforce() {
-	std::vector<long unsigned int> best;
-	std::vector<long unsigned int> slave;
-	double shortest_path{};
-	for (long unsigned int i = 1; i < cities.size(); ++i){
-		best.push_back(i);
-		slave.push_back(i);
-		shortest_path += distances(i, i-1);
-	}
-	shortest_path += distances(0, cities.size()-1);
+    std::vector<long unsigned int> best;
+    std::vector<long unsigned int> slave;
+    double shortest_path{};
+    for (long unsigned int i = 1; i < cities.size(); ++i) {
+        best.push_back(i);
+        slave.push_back(i);
+        shortest_path += distances(i, i - 1);
+    }
+    shortest_path += distances(0, cities.size() - 1);
 
-	while (std::next_permutation(slave.begin(), slave.end())) {
-		double path{};
-		for (long unsigned int i = 1; i < slave.size(); ++i) {
-			path += distances(slave.at(i), slave.at(i-1));
-		}
-		path += distances(slave.at(0), 0);
-		path += distances(slave.size()-1, 0);
+    while (std::next_permutation(slave.begin(), slave.end())) {
+        double path{};
+        for (long unsigned int i = 1; i < slave.size(); ++i) {
+            path += distances(slave.at(i), slave.at(i - 1));
+        }
+        path += distances(slave.at(0), 0);
+        path += distances(slave.size() - 1, 0);
 
-		if (path < shortest_path){
-			shortest_path = path;
-			best = slave;
-		}
-	}
+        if (path < shortest_path) {
+            shortest_path = path;
+            best = slave;
+        }
+    }
 
-	best.insert(best.begin(), 0);
-	for (long unsigned int i = 0; i < best.size(); ++i) {
-		++best.at(i);
-	}
-	return best;
+    best.insert(best.begin(), 0);
+    for (long unsigned int i = 0; i < best.size(); ++i) {
+        ++best.at(i);
+    }
+    return best;
 }
 
 bool chromosome::check() {
@@ -117,14 +117,14 @@ bool chromosome::is_tangled() {
 }
 
 void chromosome::untangle(Random &rnd) {
-	long unsigned int start = static_cast<int>(std::floor(_genes.size() * rnd.Rannyu())); //start untagling from a random point
-	for (long unsigned int j = 0; j < start; ++j) {
+    long unsigned int start = static_cast<int>(std::floor(_genes.size() * rnd.Rannyu())); // start untagling from a random point
+    for (long unsigned int j = 0; j < start; ++j) {
         int slave = _genes.at(0);
         for (long unsigned int i = 1; i < _genes.size(); ++i) {
             _genes.at(i - 1) = _genes.at(i);
         }
         _genes.back() = slave;
-	}
+    }
 
     bool flag = true;
     while (flag == true) {
@@ -168,8 +168,8 @@ chromosome::chromosome(map m, bool test, Random &rnd) {
     }
     scramble(rnd);
     if (test == false) {
-		untangle(rnd);
-	}
+        untangle(rnd);
+    }
     _fitness = std::pow(1.0 / L(), 4);
 }
 

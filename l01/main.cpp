@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
     out.close();
 
     rnd.SaveSeed();
-	rnd.SetRandom(seed, p1, p2); // reset rnd
+    rnd.SetRandom(seed, p1, p2); // reset rnd
 
     static constexpr int TOT = 10000;
     static constexpr int M = 100; // 100 intervals
@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
     //----------------------------------exercise 01.2---------------------------------------
 
     static constexpr int NUM[4] = {1, 2, 10, 100};
-
+    rnd.SetRandom(seed, p1, p2); // reset rnd
     std::stringstream d6_buffer, de_buffer, dl_buffer;
 
     for (int j = 0; j < TOT; ++j) {
@@ -179,6 +179,7 @@ int main(int argc, char *argv[]) {
 
     //----------------------------------exercise 01.3---------------------------------------
 
+    rnd.SetRandom(seed, p1, p2); // reset rnd
     static constexpr int d = 6;
     static constexpr int L = 5;
 

@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
     std::stringstream buffer;
     std::stringstream buffer_100;
     std::stringstream buffer_210;
-	std::stringstream buffer_autoc;
+    std::stringstream buffer_autoc;
 
     walker s_sampler{};
     walker p_sampler{};
@@ -158,8 +158,8 @@ int main(int argc, char *argv[]) {
     double r_p{};
     double r_p2{};
 
-	std::vector<double> s_orbital;
-	std::vector<double> p_orbital;
+    std::vector<double> s_orbital;
+    std::vector<double> p_orbital;
 
     for (int i = 0; i < blocknum; ++i) {
         double avg_s{};
@@ -186,8 +186,8 @@ int main(int argc, char *argv[]) {
             buffer_100 << s_sampler.x << "\t" << s_sampler.y << "\t" << s_sampler.z << "\t" << s_sampler.r() << "\n";
             buffer_210 << p_sampler.x << "\t" << p_sampler.y << "\t" << p_sampler.z << "\t" << p_sampler.r() << "\n";
 
-			s_orbital.push_back(s_sampler.r());
-			p_orbital.push_back(p_sampler.r());
+            s_orbital.push_back(s_sampler.r());
+            p_orbital.push_back(p_sampler.r());
 
             avg_s += s_sampler.r();
             avg_p += p_sampler.r();
@@ -214,9 +214,9 @@ int main(int argc, char *argv[]) {
         buffer << r_s << "\t" << sigma_s << "\t" << r_p << "\t" << sigma_p << "\n";
     }
 
-	for (int i=0; i<10*blocksize; ++i){
-		buffer_autoc << autocorrelation(s_orbital, i) << "\t" << autocorrelation(p_orbital, i) << "\n";
-	}
+    for (int i = 0; i < 10 * blocksize; ++i) {
+        buffer_autoc << autocorrelation(s_orbital, i) << "\t" << autocorrelation(p_orbital, i) << "\n";
+    }
 
     std::ofstream out;
     out.open("output.dat");
@@ -231,12 +231,14 @@ int main(int argc, char *argv[]) {
     out << buffer_210.str();
     out.close();
 
-	out.open("output_autoc.dat");
+    out.open("output_autoc.dat");
     out << buffer_autoc.str();
     out.close();
 
     buffer_100.str(std::string());
     buffer_210.str(std::string());
+
+    rnd.SetRandom(seed, p1, p2); // reset rnd
 
     s_sampler = walker(x_0, y_0, z_0); // now I start far away from the origin (initial coords provided as arguments)
     p_sampler = walker(x_0, y_0, z_0);
@@ -274,6 +276,8 @@ int main(int argc, char *argv[]) {
     buffer.str(std::string());
     buffer_100.str(std::string());
     buffer_210.str(std::string());
+
+    rnd.SetRandom(seed, p1, p2); // reset rnd
 
     best_s_acceptance = 0;
     best_p_acceptance = 0;

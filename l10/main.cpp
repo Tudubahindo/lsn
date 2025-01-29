@@ -32,24 +32,24 @@ int main(int argc, char *argv[]) {
 
     // read input file
     std::string filename;
-	std::string option;
-	bool flag = false;
+    std::string option;
+    bool flag = false;
     if (argc < 2) {
         std::cout << "Program usage: [-x] <file_name>\nType in the name of the file you want to use: ";
         std::cin >> filename;
         std::cout << "\n";
     } else {
-		if (argc > 2) {
-			option = argv[1];
-			if (option[0] == '-') {
-				filename = argv[2];
-				flag = true;
-			} else {
-				filename = option;
-			}
-		} else {
-			filename = argv[1];
-		}
+        if (argc > 2) {
+            option = argv[1];
+            if (option[0] == '-') {
+                filename = argv[2];
+                flag = true;
+            } else {
+                filename = option;
+            }
+        } else {
+            filename = argv[1];
+        }
     }
 
     std::ifstream in(filename);
@@ -75,10 +75,10 @@ int main(int argc, char *argv[]) {
     int p1, p2;
     std::ifstream Primes("Primes");
     if (Primes.is_open()) {
-		for (int i=0; i<rank; ++i) {
-			int trash;
-			Primes >> trash >> trash;
-		}
+        for (int i = 0; i < rank; ++i) {
+            int trash;
+            Primes >> trash >> trash;
+        }
         Primes >> p1 >> p2;
     } else
         std::cerr << "PROBLEM: Unable to open Primes" << std::endl;
@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
             input >> property;
             if (property == "RANDOMSEED") {
                 input >> seed[0] >> seed[1] >> seed[2] >> seed[3];
-                seed[3] += 10 + rank; //I tried some seeds and this is the best
+                seed[3] += 10 + rank; // I tried some seeds and this is the best
                 rnd.SetRandom(seed, p1, p2);
             }
         }
@@ -117,8 +117,8 @@ int main(int argc, char *argv[]) {
         people.push_back(slave);
     }
 
-	std::sort(people.rbegin(), people.rend());
-	chromosome best = people.at(0);
+    std::sort(people.rbegin(), people.rend());
+    chromosome best = people.at(0);
 
     bool ok = true;
     for (int generation = 0; generation < total; ++generation) {
@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
             double num_swap = rnd.Rannyu();
             double num_shift = rnd.Rannyu();
             double num_perm = rnd.Rannyu();
-            //double num_inv = rnd.Rannyu();
+            // double num_inv = rnd.Rannyu();
 
             if (num_swap < Pmutation) {
                 people.at(i).mutation_random_swap(rnd);
@@ -184,9 +184,9 @@ int main(int argc, char *argv[]) {
         }
         avg_L /= half;
 
-		if (people.at(0).L() < best.L()) {
-			best = people.at(0);
-		}
+        if (people.at(0).L() < best.L()) {
+            best = people.at(0);
+        }
 
         if (rank == 0)
             std::cout << generation << "\t" << people.at(0).check() << "\t" << people.at(0).L() << "\t" << avg_L << "\t" << people.at(0).fit_getter() << "\t"
@@ -206,34 +206,34 @@ int main(int argc, char *argv[]) {
             delete[] receiver;
         }*/
 
-		if (generation % 10 == 9 && flag==true) {
+        if (generation % 10 == 9 && flag == true) {
             long unsigned int *receiver = new long unsigned int[size * cross_size * cities.size()];
             std::vector<long unsigned int> sender = people.at(0).intprint();
-			for (int k = 1; k < cross_size; ++k) {
-				std::vector<long unsigned int> slave = people.at(k).intprint();
-				sender.insert(sender.end(), slave.begin(), slave.end());
-			}
+            for (int k = 1; k < cross_size; ++k) {
+                std::vector<long unsigned int> slave = people.at(k).intprint();
+                sender.insert(sender.end(), slave.begin(), slave.end());
+            }
             MPI_Allgather(sender.data(), cross_size * cities.size(), MPI_UNSIGNED_LONG, receiver, cross_size * cities.size(), MPI_UNSIGNED_LONG, MPI_COMM_WORLD);
-            //int num = static_cast<int>(std::floor(size * rnd.Rannyu()));
-			//num = rank+1;
-			//if (num == size) num = 0;
-			std::vector<chromosome> slave{};
-			for (int k = 0; k < cross_size; ++k) {
-				int number = static_cast<int>(std::floor(size * cross_size * rnd.Rannyu()));
-				std::vector<long unsigned int> inserter{};
-	            for (long unsigned int j = 0; j < cities.size(); ++j) {
-					//inserter.push_back(receiver[num * cities.size() * cross_size + k * cities.size() + j]);
-					inserter.push_back(receiver[number * cities.size() + j]);
-				}
-				slave.push_back(chromosome(city_map, inserter));
-			}
+            // int num = static_cast<int>(std::floor(size * rnd.Rannyu()));
+            // num = rank+1;
+            // if (num == size) num = 0;
+            std::vector<chromosome> slave{};
+            for (int k = 0; k < cross_size; ++k) {
+                int number = static_cast<int>(std::floor(size * cross_size * rnd.Rannyu()));
+                std::vector<long unsigned int> inserter{};
+                for (long unsigned int j = 0; j < cities.size(); ++j) {
+                    // inserter.push_back(receiver[num * cities.size() * cross_size + k * cities.size() + j]);
+                    inserter.push_back(receiver[number * cities.size() + j]);
+                }
+                slave.push_back(chromosome(city_map, inserter));
+            }
 
-            people.erase(people.end()-cross_size, people.end());
-            //people.erase(people.begin(), people.begin() + cross_size);
-			people.insert(people.end(), slave.begin(), slave.end());
+            people.erase(people.end() - cross_size, people.end());
+            // people.erase(people.begin(), people.begin() + cross_size);
+            people.insert(people.end(), slave.begin(), slave.end());
             delete[] receiver;
         }
-		//std::cerr << people.size() << "\n";
+        // std::cerr << people.size() << "\n";
     }
 
     long unsigned int *receiver = new long unsigned int[size * cities.size()];
@@ -249,9 +249,10 @@ int main(int argc, char *argv[]) {
         }
     }
 
-	std::string outname = "output";
-	if (flag) outname += "_x";
-	outname += ".dat";
+    std::string outname = "output";
+    if (flag)
+        outname += "_x";
+    outname += ".dat";
     std::ofstream out;
     out.open(outname);
     out << buffer.str();

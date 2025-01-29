@@ -128,6 +128,8 @@ int main(int argc, char *argv[]) {
 
     //----------------------------------exercise 03.2---------------------------------------
 
+    rnd.SetRandom(seed, p1, p2); // reset rnd
+
     running_call = 0;
     running_call2 = 0;
 

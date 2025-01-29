@@ -25,7 +25,7 @@ double f(double x) {
 }
 
 double p(double x) {
-	return (0.25*M_PI*x + 1.0) * (1.0 - x) / (M_PI/24.0 + 0.5);
+    return (0.25 * M_PI * x + 1.0) * (1.0 - x) / (M_PI / 24.0 + 0.5);
 }
 
 double g(double x) {
@@ -117,7 +117,7 @@ int main(int argc, char *argv[]) {
         for (int j = 0; j < blocksize; ++j) {
             double num = rnd.Rannyu();
             avg += f(num);
-			importance += g(rnd.AcceptReject(0.0, 1.0, 1.6, p));
+            importance += g(rnd.AcceptReject(0.0, 1.0, 1.6, p));
         }
         avg /= (double)blocksize;
         importance /= (double)blocksize;
@@ -148,7 +148,7 @@ int main(int argc, char *argv[]) {
 
     //----------------------------------exercise 02.2---------------------------------------
 
-	rnd.SetRandom(seed, p1, p2);       // reset rnd
+    rnd.SetRandom(seed, p1, p2);       // reset rnd
     static constexpr int length = 100; // length of the RW
 
     std::stringstream d_buffer;

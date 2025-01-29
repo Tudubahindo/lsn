@@ -37,7 +37,7 @@ struct map {
     SquareMatrix<double> distances;
 
     map(std::vector<city> c);
-	std::vector<long unsigned int> bruteforce();
+    std::vector<long unsigned int> bruteforce();
 };
 
 class chromosome {

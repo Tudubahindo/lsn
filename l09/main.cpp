@@ -8,9 +8,9 @@ _/    _/  _/_/_/  _/_/_/_/ email: Davide.Galli@unimi.it
 *****************************************************************
 *****************************************************************/
 
+#include "../genetics.h"
 #include "../random.h"
 #include "../stats.h"
-#include "../genetics.h"
 #include <cmath>
 #include <fstream>
 #include <iostream>
@@ -82,7 +82,7 @@ bool genetic_algo(int popsize, int total, map in_map, std::string filename, Rand
                 people.at(i).mutation_permutation(rnd);
             }
             if (num_inv < Pmutation) {
-                //people.at(i).mutation_inversion(rnd);
+                // people.at(i).mutation_inversion(rnd);
             }
 
             people.at(i).untangle(rnd);
@@ -93,28 +93,29 @@ bool genetic_algo(int popsize, int total, map in_map, std::string filename, Rand
         }
 
         std::sort(people.rbegin(), people.rend());
-		double avg_L{};
-		int half = popsize/2;
-		for (int i = 0; i < half; ++i){
-			avg_L += people.at(i).L();
-		}
-		avg_L /= half;
+        double avg_L{};
+        int half = popsize / 2;
+        for (int i = 0; i < half; ++i) {
+            avg_L += people.at(i).L();
+        }
+        avg_L /= half;
 
-        buffer << generation << "\t" << people.at(0).check() << "\t" << people.at(0).L() << "\t" << avg_L << "\t" << people.at(0).fit_getter() << "\t" << "\n";
+        buffer << generation << "\t" << people.at(0).check() << "\t" << people.at(0).L() << "\t" << avg_L << "\t" << people.at(0).fit_getter() << "\t"
+               << "\n";
     }
 
     std::ofstream out;
-    out.open("verbose_"+filename);
+    out.open("verbose_" + filename);
     for (auto i : people) {
         out << i.print() << "\n";
     }
     out.close();
 
-	out.open(filename);
+    out.open(filename);
     out << buffer.str();
     out.close();
-    
-	return ok;
+
+    return ok;
 }
 
 int main(int argc, char *argv[]) {
@@ -195,10 +196,10 @@ int main(int argc, char *argv[]) {
               << genetic_algo(popsize, 300, square_map, "output_square.dat", rnd) << "\n";
 
     /*buffer.str(std::string()); //DO NOT UNCOMMENT unless the number of cities is below 15
-	std::vector<long unsigned int> brute = square_map.bruteforce();
-	for (long unsigned int i = 0; i < brute.size(); ++i) {
-		buffer << brute.at(i) << "\t";
-	}
+    std::vector<long unsigned int> brute = square_map.bruteforce();
+    for (long unsigned int i = 0; i < brute.size(); ++i) {
+        buffer << brute.at(i) << "\t";
+    }
     out.open("output_bruteforce.dat");
     out << buffer.str();
     out.close();*/

@@ -13,8 +13,8 @@ _/    _/  _/_/_/  _/_/_/_/ email: Davide.Galli@unimi.it
 #include <cmath>
 #include <fstream>
 #include <iostream>
-#include <string>
 #include <sstream>
+#include <string>
 #include <tuple>
 #include <vector>
 #define _USE_MATH_DEFINES
@@ -49,13 +49,13 @@ std::tuple<double, double> Energy(double step_length, double mu, double sigma,
     static constexpr int blocksize = 100;              // one hundred blocks
     static constexpr int blocknum = total / blocksize; // one hundred steps per block
 
-	std::stringstream buffer, hist_buffer;
+    std::stringstream buffer, hist_buffer;
     walker sampler{};
 
     double running_H{};
     double running_H2{};
     double sigma_H{};
-	std::vector<double> H_ac;
+    std::vector<double> H_ac;
     long rate{};
 
     for (int i = 0; i < blocknum; ++i) {
@@ -77,10 +77,10 @@ std::tuple<double, double> Energy(double step_length, double mu, double sigma,
                           std::tanh(sampler.x * mu / std::pow(sigma, 2)) -
                       std::pow(sigma, 2)) /
                      std::pow(sigma, 4);
-			if (verbose == true && calibration == false) 
-				hist_buffer << sampler.x << "\n";
-			if (verbose == true && calibration == true) 
-				H_ac.push_back(sampler.x);
+            if (verbose == true && calibration == false)
+                hist_buffer << sampler.x << "\n";
+            if (verbose == true && calibration == true)
+                H_ac.push_back(sampler.x);
         }
 
         H /= (double)blocksize;
@@ -91,35 +91,35 @@ std::tuple<double, double> Energy(double step_length, double mu, double sigma,
         sigma_H = std::sqrt((running_H2 - std::pow(running_H, 2)) / i);
         if (i == 0)
             sigma_H = 0;
-		if (verbose == true)
-			buffer << running_H << "\t" << sigma_H << "\n";
+        if (verbose == true)
+            buffer << running_H << "\t" << sigma_H << "\n";
     }
 
-	if (verbose == true) {
-	    std::ofstream out;
-		std::string name = "output_";
-		if (calibration == true)
-			name += "calibration.dat";
-		else
-			name += "final.dat";
-		out.open(name);
-	    out << buffer.str();
-		out.close();
+    if (verbose == true) {
+        std::ofstream out;
+        std::string name = "output_";
+        if (calibration == true)
+            name += "calibration.dat";
+        else
+            name += "final.dat";
+        out.open(name);
+        out << buffer.str();
+        out.close();
 
-		if (calibration == false) {
-			out.open("output_hist.dat");
-			out << hist_buffer.str();
-			out.close();
-		}
+        if (calibration == false) {
+            out.open("output_hist.dat");
+            out << hist_buffer.str();
+            out.close();
+        }
 
-		if (calibration == true) {
-			out.open("output_autoc.dat");
-			for (int i=0; i<blocksize; ++i){
-				out << autocorrelation(H_ac, i) << "\n";
-			}
-			out.close();
-		}
-	}
+        if (calibration == true) {
+            out.open("output_autoc.dat");
+            for (int i = 0; i < blocksize; ++i) {
+                out << autocorrelation(H_ac, i) << "\n";
+            }
+            out.close();
+        }
+    }
 
     if (calibration == false) {
         return {running_H, sigma_H};
@@ -186,13 +186,13 @@ int main(int argc, char *argv[]) {
     } else
         std::cerr << "PROBLEM: Unable to open seed.in" << std::endl;
 
-    //---------------------------------------------------------------------------------------------------
+    //----------------------------------exercise 08.1---------------------------------------
 
     double step_length = 0.1;
     double best_acceptance{};
 
     std::vector<walker> wavefunction{};
-	std::stringstream buffer;
+    std::stringstream buffer;
 
     for (int k = 1; k < 51; ++k) {
         double rate = std::get<1>(
@@ -207,11 +207,13 @@ int main(int argc, char *argv[]) {
         }
     }
 
-	auto trash = Energy(step_length, initial_mu, initial_sigma, rnd, true, true);
+    auto trash = Energy(step_length, initial_mu, initial_sigma, rnd, true, true);
     std::cerr << step_length << "\n";
 
     param_space_walker parameters_sampler =
         param_space_walker(step_length, rnd);
+
+    //----------------------------------exercise 08.2---------------------------------------
 
     double beta = 0.001;
     static constexpr int sameTsteps = 100;
@@ -230,21 +232,21 @@ int main(int argc, char *argv[]) {
                 parameters_sampler = slave;
             }
             buffer << parameters_sampler.m << "\t" << parameters_sampler.s
-				   << "\t" << parameters_sampler.L << "\t" << parameters_sampler.l << "\n";
+                   << "\t" << parameters_sampler.L << "\t" << parameters_sampler.l << "\n";
         }
         beta *= 2;
     }
 
-	trash = Energy(step_length, parameters_sampler.m, parameters_sampler.s, rnd, false, true);
+    trash = Energy(step_length, parameters_sampler.m, parameters_sampler.s, rnd, false, true);
 
     std::ofstream out;
     out.open("output.dat");
     out << buffer.str();
     out.close();
 
-	/*for (int i=0; i<100; ++i)
-		std::cerr << std::get<0>(Energy(step_length, -1.42806, 0.0145151, rnd, false, false)) << "\t" << std::get<1>(Energy(step_length, -1.42806, 0.0145151, rnd, false, false)) << "\n";
-	*/
+    /*for (int i=0; i<100; ++i)
+        std::cerr << std::get<0>(Energy(step_length, -1.42806, 0.0145151, rnd, false, false)) << "\t" << std::get<1>(Energy(step_length, -1.42806, 0.0145151, rnd, false, false)) << "\n";
+    */
 
     rnd.SaveSeed();
     return 0;
