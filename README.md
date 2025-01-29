@@ -13,6 +13,6 @@ where `{n}` is a natural number and `{directory_path}` is the path of the input 
 
 All the other exercises are contained in a single c++ program named `main.cpp` located in the relevant directory. Use `make` to compile and `./main.exe` to execute (c++17 required). l10 requires MPI to compile and `mpiexec` to run, so I suggest to just run the `all.sh` script instead.
 
-Some programs may take a LONG time to run, so I uploaded the output files as well.
+Some programs may take a LONG time to run, so I uploaded the output files as well. It should suffice to just run the jupyter notebooks.
 
 Special thanks to my colleagues Alessio Serraino and Stefano Pilosio for the invaluable feedback they provided on some technical issues.
