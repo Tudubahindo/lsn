@@ -134,24 +134,6 @@ double Random::AcceptReject(const double a, const double b, const double max,
     return x;
 }
 
-double Random::ExternalInvCum(std::function<double(double)> &ICDF) {
-    return ICDF(Rannyu());
-}
-
-uint64_t Random::Ranint() {
-    l_tot = l_tot * m_tot + n_tot;
-    l_tot &= ((1ull << 48) - 1);
-    uint64_t r = l_tot;
-    return r;
-}
-
-uint64_t Random::Ranint(const uint64_t min, const uint64_t max) {
-    assert((max > min) && "supplied wrong value range");
-    auto range = max - min + 1;
-    auto res = Ranint() % range + min;
-    return res;
-}
-
 // } // namespace Sim
 
 /****************************************************************

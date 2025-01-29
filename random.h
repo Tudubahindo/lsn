@@ -45,10 +45,6 @@ class Random {
     double Rannyu(void);
     // Method to generate a random number in the range [min,max)
     double Rannyu(const double min, const double max);
-    // Method to generate random integers in range [0 , 2**48)
-    uint64_t Ranint();
-    // Method to generate random integers in range [min, max)]
-    uint64_t Ranint(const uint64_t min, const uint64_t max);
     // Method to generate a random number with a Gaussian distribution
     double Gauss(const double mean, const double sigma);
     // Method to generate a random number with an Exponential distribution
@@ -60,8 +56,6 @@ class Random {
                         std::function<double(double)> &PDF);
     double AcceptReject(const double a, const double b, const double max,
                         const std::function<double(double)> &PDF);
-    // Method with inverse cumulative
-    double ExternalInvCum(std::function<double(double)> &ICDF);
 };
 
 // }
